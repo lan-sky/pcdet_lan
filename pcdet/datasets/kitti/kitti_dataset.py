@@ -2,6 +2,7 @@ import copy
 import pickle
 
 import numpy as np
+import cv2
 from skimage import io
 
 from ...ops.roiaware_pool3d import roiaware_pool3d_utils
@@ -60,9 +61,14 @@ class KittiDataset(DatasetTemplate):
         self.sample_id_list = [x.strip() for x in open(split_dir).readlines()] if split_dir.exists() else None
 
     def get_lidar(self, idx):
-        lidar_file = self.root_split_path / 'velodyne' / ('%s.bin' % idx)
+        lidar_file = self.root_split_path / 'velodyne_reduced' / ('%s.bin' % idx)
         assert lidar_file.exists()
         return np.fromfile(str(lidar_file), dtype=np.float32).reshape(-1, 4)
+
+    def get_image(self, idx):
+        img_file = self.root_split_path / 'image_2' / ('%s.png' % idx)
+        assert img_file.exists()
+        return np.array(io.imread(img_file), dtype=np.int8)
 
     def get_image_shape(self, idx):
         img_file = self.root_split_path / 'image_2' / ('%s.png' % idx)
@@ -347,6 +353,7 @@ class KittiDataset(DatasetTemplate):
         sample_idx = info['point_cloud']['lidar_idx']
 
         points = self.get_lidar(sample_idx)
+        imgs = self.get_image(sample_idx)
         calib = self.get_calib(sample_idx)
 
         img_shape = info['image']['image_shape']
@@ -357,6 +364,7 @@ class KittiDataset(DatasetTemplate):
 
         input_dict = {
             'points': points,
+            'imgs': imgs,
             'frame_id': sample_idx,
             'calib': calib,
         }

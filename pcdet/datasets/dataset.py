@@ -160,6 +160,11 @@ class DatasetTemplate(torch_data.Dataset):
             try:
                 if key in ['voxels', 'voxel_num_points']:
                     ret[key] = np.concatenate(val, axis=0)
+                # elif key in ['points', 'voxel_coords']:
+                #     points = []
+                #     for point in val:
+                #         points.append(point)
+                #     ret[key] = points
                 elif key in ['points', 'voxel_coords']:
                     coors = []
                     for i, coor in enumerate(val):
@@ -172,6 +177,11 @@ class DatasetTemplate(torch_data.Dataset):
                     for k in range(batch_size):
                         batch_gt_boxes3d[k, :val[k].__len__(), :] = val[k]
                     ret[key] = batch_gt_boxes3d
+                elif key in ['imgs']:
+                    imgs = []
+                    for img in val:
+                        imgs.append(img)
+                    ret[key] = imgs
                 else:
                     ret[key] = np.stack(val, axis=0)
             except:
